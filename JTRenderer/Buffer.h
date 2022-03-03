@@ -28,8 +28,30 @@ public:
 	{
 		max_w = width - 1;
 		max_h = height - 1;
-		size = width * height * 4;
+		int offest;
+		switch (type)
+		{
+		case BufferType::COLOR:
+			offest = 4;
+			break;
+		case BufferType::DEPTH:
+			offest = 4;
+			break;
+		case BufferType::VERTEX:
+			offest = 12;
+			break;
+		case BufferType::INDEX:
+			offest = 4;
+			break;
+		default:
+			break;
+		}
+		size = width * height * offest;
 		buffer = malloc(size);
+		if (buffer==NULL)
+		{
+			LOG("error");
+		}
 	}
 	/**
 	 * @brief 构造内存函数
@@ -41,16 +63,30 @@ public:
 	{
 		max_w = width - 1;
 		max_h = height - 1;
-		size = width * height * 4;
+		int offest;
+		switch (type)
+		{
+		case BufferType::COLOR:
+			offest = 4;
+			break;
+		case BufferType::DEPTH:
+			offest = 4;
+			break;
+		case BufferType::VERTEX:
+			offest = 52;
+			break;
+		case BufferType::INDEX:
+			offest = 4;
+			break;
+		default:
+			break;
+		}
+		size = width * height * offest;
 		buffer = malloc(size);
-		count = 0;
-	}
-	Buffer(const unsigned int bsize,  BufferType t) :width(bsize), height(1), type(t)
-	{
-		max_w = width - 1;
-		max_h = height - 1;
-		size = bsize;
-		buffer = malloc(size);
+		if (buffer == NULL)
+		{
+			LOG("error");
+		}
 		count = 0;
 	}
 	Buffer(const Buffer &a)
@@ -97,7 +133,6 @@ public:
 	 * @param h 要注册的缓冲区的高度
 	*/
 	void RegisterBuffer(unsigned int& id,const BufferType type, const unsigned int w, const unsigned int h);
-	void RegisterBuffer(unsigned int& id, const BufferType type, const unsigned int bsize);
 	void RegisterTextureBuffer(unsigned int& id, const char* path);
 	/**
 	 * @brief 向一个颜色缓冲区中写入
@@ -153,7 +188,7 @@ public:
 	 * @param size 顶点索引数组的真实大小，以字节计算
 	 * @param count 顶点索引数组的个数
 	*/
-	void WriteIndexBuffer(const unsigned int id, const Index* index, const unsigned int size, const unsigned int count);
+	void WriteIndexBuffer(const unsigned int id, const int* index, const unsigned int size, const unsigned int count);
 	/**
 	 * @brief 读一个顶点索引缓冲
 	 * @param id 绑定顶点缓冲的id
@@ -184,7 +219,7 @@ class FrameBuffer
 {
 public:
 	FrameBuffer();
-	FrameBuffer(unsigned int w,unsigned int h);
+	explicit FrameBuffer(unsigned int w ,unsigned int h, MathLib::Color backCo = MathLib::Color(0, 0, 0));
 	~FrameBuffer();
 	void AddColorBuffer(const unsigned int bufferId);
 	void DeleteColorBuffer(const unsigned int bufferId);
@@ -193,6 +228,14 @@ public:
 	void DeleteDepthBuffer(const unsigned int bufferId);
 	const unsigned int GetDepthBufferCount();
 	void DeleteAll();
+	inline const unsigned int GetFirstColorBuffer()
+	{
+		return *ColorBuffer.begin();
+	}
+	inline const unsigned int GetFirstColorDepth()
+	{
+		return *DepthBuffer.begin();
+	}
 private:
 	std::set<unsigned int> ColorBuffer;
 	std::set<unsigned int> DepthBuffer;

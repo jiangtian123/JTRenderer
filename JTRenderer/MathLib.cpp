@@ -1,8 +1,8 @@
 #include"MathLib.h"
-float DegToRad(float deg) { return deg * MY_PI / 180.0f; }
-float RadToDeg(float rad) { return rad * 180.0f / MY_PI; }
 namespace MathLib
 {
+	float DegToRad(float deg) { return deg * MY_PI / 180.0f; }
+	float RadToDeg(float rad) { return rad * 180.0f / MY_PI; }
 	Vec2 operator+(const Vec2 a, const Vec2 b)
 	{
 		Vec2 res;
@@ -357,6 +357,27 @@ namespace MathLib
 	Mat4x4 Inverse(const Mat4x4 a)
 	{
 		return Mat4x4();
+	}
+	float CalculateTriangleArea(const Vec2 a0, const Vec2 a1, const Vec2 a2)
+	{
+		Vec2 BA = a1 - a0;
+		Vec2 CA = a2 - a0;
+		return (BA.x * CA.y - BA.y * CA.x)*0.5;
+	}
+	std::tuple<float, float, float> ComputeBarycentric2D(const Vec2 mea, const Vec2 a0, const Vec2 a1, const Vec2 a2)
+	{
+		float totalTri = std::fabs(MathLib::CalculateTriangleArea(a0, a1, a2));
+		float mea_a0_ = std::fabs(MathLib::CalculateTriangleArea(mea, a1, a2));
+		float mea_a1_ = std::fabs(MathLib::CalculateTriangleArea(mea, a0, a2));
+		float mea_a2_ = std::fabs(MathLib::CalculateTriangleArea(mea, a0, a1));
+		float c1 = mea_a0_ / totalTri;
+		float c2 = mea_a1_ / totalTri;
+		float c3 = mea_a2_ / totalTri;
+		return { c1,c2,c3 };
+	}
+	float Clamp(const float x, const float x1, const float x2)
+	{
+		return (x < x1) ? x1 : (x > x2 ? x2 : x);
 	}
 	float learp(const float x1, const float x2, const float t)
 	{

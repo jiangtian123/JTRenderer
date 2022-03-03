@@ -16,6 +16,7 @@ enum class Primitive
 class Rasterizer
 {
 public:
+	Rasterizer() = delete;
 	Rasterizer(unsigned int w, unsigned int h);
 	~Rasterizer()
 	{
@@ -51,9 +52,37 @@ public:
 	{
 		this->Pro = pr;
 	}
+	inline void BindCamera(Camera* const ca)
+	{
+		m_camera = ca;
+	}
+	inline void SetBackGroundColor(const MathLib::Color bc)
+	{
+		backColor = bc;
+	}
+	inline unsigned int GetDefultColorBuffer()
+	{
+		return defult_frame_buffer.GetFirstColorBuffer();
+	}
+	inline int GetWidth()
+	{
+		return width;
+	}
+	inline int GetHeight()
+	{
+		return height;
+	}
 	bool IsInsideTriangle(float xn, float yn, const MathLib::Vec2 a1, const  MathLib::Vec2 a2, const MathLib::Vec2 a3);
-	void RasterizeTriangle(Triangle& tir);
+	void RasterizeTriangle(Triangle& tir, std::array<MathLib::Vec4, 3> wordPos);
+	/**
+	 * @brief 绘制函数
+	 * @param vertex_size 顶点个数
+	 * @param index_size 索引个数
+	 * @param drawType 绘制类型
+	 * @param pri_size 图元个数
+	*/
 	void Draw(const unsigned int vertex_size, const unsigned int index_size, const Primitive drawType, const unsigned int pri_size);
+	
 private:
 	MathLib::Mat4x4 Model;
 	MathLib::Mat4x4 View;
@@ -66,5 +95,6 @@ private:
 	unsigned int height;
 	unsigned int* vertex_buffer;
 	unsigned int* index_buffer;
+	MathLib::Color backColor = MathLib::Color(0);
 	FrameBuffer defult_frame_buffer;
 };

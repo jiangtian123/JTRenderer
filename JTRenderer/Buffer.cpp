@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "MathLib.h"
 #include "Buffer.h"
+#include <float.h>
 using namespace MathLib;
 typedef unsigned int INT32;
 inline BufferType operator|(const BufferType a, const BufferType b)
@@ -47,12 +48,6 @@ void BufferManage::RegisterBuffer(unsigned int& id, const BufferType type, const
 	id = ID++;
 	Bufferlist.insert(std::pair<unsigned int, Buffer>{id, buf});
 }
-void BufferManage::RegisterBuffer(unsigned int& id, const BufferType type, const unsigned int bsize)
-{
-	Buffer buf = Buffer(bsize, type);
-	id = ID++;
-	Bufferlist.insert(std::pair<unsigned int, Buffer>{id, buf});
-}
 void BufferManage::RegisterTextureBuffer(unsigned int& id, const char* path)
 {
 	Texture tex(path);
@@ -71,6 +66,7 @@ MathLib::Color BufferManage::Tex(const  unsigned int id, const float u, const fl
 }
 void BufferManage::WriteColorBuffer(const unsigned int id, const unsigned int x, const unsigned int y, const MathLib::Color co)
 {
+	
 	std::map<unsigned int, Buffer>::iterator res = Bufferlist.find(id);
 	if (res == Bufferlist.end() && res->second.type != BufferType::COLOR)
 	{
@@ -85,9 +81,11 @@ void BufferManage::WriteColorBuffer(const unsigned int id, const unsigned int x,
 		std::cout << "OVER W OR H" << std::endl;
 		return;
 	}
-	MathLib::Color* colorbuffer = (MathLib::Color*)res->second.buffer;
+	static int count;
+	unsigned int* colorbuffer = (unsigned int*)res->second.buffer;
 	unsigned int index = x * res->second.width + y;
-	colorbuffer[index] = co;
+	unsigned int tem_color = (co.r<<24)|(co.g<<16)|(co.b<<8)|co.a;
+	colorbuffer[index] = tem_color;
 }
 MathLib::Color BufferManage::ReadColorBuffer(const unsigned int id, const unsigned int x, const unsigned int y)
 {
@@ -105,9 +103,14 @@ MathLib::Color BufferManage::ReadColorBuffer(const unsigned int id, const unsign
 		std::cout << "OVER W OR H" << std::endl;
 		assert(0);
 	}
-	MathLib::Color* colorbuffer = (MathLib::Color*)res->second.buffer;
+	int* colorbuffer = (int*)res->second.buffer;
 	unsigned int index = x * res->second.width + y;
-	MathLib::Color co = colorbuffer[index];
+	int tem_co = colorbuffer[index];
+	MathLib::Color co;
+	co.r= (tem_co >> 24) & 0xFF;
+	co.g = (tem_co>> 16) & 0xFF;
+	co.b = (tem_co >> 8) & 0xFF;
+	co.a =  tem_co & 0xFF;
 	return co;
 }
 void BufferManage::WriteDepthBuffer(const unsigned int id, const unsigned int x, const unsigned int y, const float de)
@@ -150,7 +153,7 @@ float BufferManage::ReadDepthBuffer(const unsigned int id, const unsigned int x,
 	float res_depth = depthbuffer[index];
 	return res_depth;
 }
-void BufferManage::WriteVertexBuffer(const unsigned int id, const Vertex* ver, const unsigned int size, const unsigned int count)
+void BufferManage::WriteVertexBuffer(const unsigned int id, const Vertex*  ver, const unsigned int size, const unsigned int count)
 {
 	std::map<unsigned int, Buffer>::iterator res = Bufferlist.find(id);
 	if (res == Bufferlist.end() && res->second.type != BufferType::VERTEX)
@@ -174,7 +177,7 @@ void BufferManage::WriteVertexBuffer(const unsigned int id, const Vertex* ver, c
 		buffer[i] = ver[i];
 	}
 }
-void BufferManage::WriteIndexBuffer(const unsigned int id, const Index* index, const unsigned int size, const unsigned int count)
+void BufferManage::WriteIndexBuffer(const unsigned int id, const int*  index, const unsigned int size, const unsigned int count)
 {
 	std::map<unsigned int, Buffer>::iterator res = Bufferlist.find(id);
 	if (res == Bufferlist.end() && res->second.type != BufferType::INDEX)
@@ -192,7 +195,7 @@ void BufferManage::WriteIndexBuffer(const unsigned int id, const Index* index, c
 		std::cout << "POINT IS NULL" << std::endl;
 		return;
 	}
-	Index* buffer = (Index*)res->second.buffer;
+	int* buffer = (int*)res->second.buffer;
 	for (unsigned int i = 0; i < count; i++)
 	{
 		buffer[i] = index[i];
@@ -254,24 +257,31 @@ BufferManage::ManagePtr const BufferManage::GetManage()
 }
 FrameBuffer::FrameBuffer()
 {
-	ColorBuffer = {};
-	DepthBuffer = {};
-	unsigned int colorbuffer;
-	BufferManage::GetManage()->RegisterBuffer(colorbuffer,BufferType::COLOR,800,600);
-	ColorBuffer.insert(colorbuffer);
-	unsigned int depthbuffer;
-	BufferManage::GetManage()->RegisterBuffer(depthbuffer, BufferType::DEPTH, 800, 600);
-	DepthBuffer.insert(depthbuffer);
+
 }
-FrameBuffer::FrameBuffer(unsigned int w, unsigned int h)
+FrameBuffer::FrameBuffer(unsigned int w, unsigned int h ,MathLib::Color backCo)
 {
 	ColorBuffer = {};
 	DepthBuffer = {};
 	unsigned int colorbuffer;
 	BufferManage::GetManage()->RegisterBuffer(colorbuffer, BufferType::COLOR, w, h);
 	ColorBuffer.insert(colorbuffer);
+	for (size_t i = 0; i < w; i++)
+	{
+		for (size_t j = 0; j < h; j++)
+		{
+			BufferManage::GetManage()->WriteColorBuffer(colorbuffer,i,j, backCo);
+		}
+	}
 	unsigned int depthbuffer;
 	BufferManage::GetManage()->RegisterBuffer(depthbuffer, BufferType::DEPTH, w, h);
+	for (size_t i = 0; i < w; i++)
+	{
+		for (size_t j = 0; j < h; j++)
+		{
+			BufferManage::GetManage()->WriteDepthBuffer(depthbuffer, i, j, FLT_MIN);
+		}
+	}
 	DepthBuffer.insert(depthbuffer);
 }
 FrameBuffer::~FrameBuffer()

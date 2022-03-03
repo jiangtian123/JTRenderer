@@ -14,6 +14,9 @@ struct fragment_shader
 	{
 
 	}
+	MathLib::Vec3 cameraPos;
+	MathLib::Vec3 wordPos;
+	MathLib::Vec3 lightPos;
 	Vertex vertex;
 };
 struct vertex_shader

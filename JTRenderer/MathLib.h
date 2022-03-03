@@ -9,6 +9,7 @@
 #include <iostream>
 #include <math.h>
 #include <assert.h>
+#include <tuple>
 #include "global.h"
 namespace MathLib {
 	struct Vec2;
@@ -18,9 +19,9 @@ namespace MathLib {
 	typedef Vec4 Point;
 	struct Color
 	{
-		Color() :r(0), g(0), b(0), a(1.0f) {}
-		explicit Color(const unsigned short n) :r(n), g(n), b(n), a(1.0f) {}
-		explicit Color(const unsigned short x, const unsigned short y, const unsigned short z, const float w=1.0f) :r(x), g(y), b(z), a(w) {}
+		Color() :r(0), g(0), b(0), a(255) {}
+		explicit Color(const unsigned short n) :r(n), g(n), b(n), a(255) {}
+		explicit Color(const unsigned short x, const unsigned short y, const unsigned short z, const float w=255) :r(x), g(y), b(z), a(w) {}
 		~Color() = default;
 		Color(const Color& a)
 		{
@@ -37,10 +38,10 @@ namespace MathLib {
 			this->a = a.a;
 			return *this;
 		}
-		unsigned short r;
-		unsigned short g;
-		unsigned short b;
-		float a;
+		unsigned char r;
+		unsigned char g;
+		unsigned char b;
+		unsigned char a;
 	};
 	/**
 	 * @brief 齐次坐标空间矩阵，默认的w分量为1.0f
@@ -258,6 +259,8 @@ namespace MathLib {
 		}
 		float mat[4][4];
 	};
+	float DegToRad(float deg);
+	float RadToDeg(float rad);
 	Vec2 operator+(const Vec2 a, const Vec2 b);
 	Vec2 operator-(const Vec2 a, const Vec2 b);
 	bool operator==(const Vec2 a, const Vec2 b);
@@ -352,6 +355,24 @@ namespace MathLib {
 	 * @return 
 	*/
 	Mat4x4 Inverse(const Mat4x4 a);
+	/**
+	 * @brief 求三角形的面积用的是叉乘
+	 * @param a0 
+	 * @param a1 
+	 * @param a2 
+	 * @return 
+	*/
+	float CalculateTriangleArea(const Vec2 a0, const Vec2 a1, const Vec2 a2);
+	/**
+	 * @brief 求一个点在三角形内的重心坐标
+	 * @param mea 待求的三角形
+	 * @param a0 
+	 * @param a1 
+	 * @param a2 
+	 * @return 
+	*/
+	std::tuple<float, float, float> ComputeBarycentric2D(const Vec2 mea,const Vec2 a0,const Vec2 a1, Vec2 a2);
+	float Clamp(const float x,const float x1,const float x2);
 	float learp(const float x1, const float x2, const float t);
 	Vec2 learp(const Vec2 x1, const Vec2 x2,const Vec2 t);
 	Vec3 learp(const Vec3 x1, const Vec3 x2, const Vec3 t);

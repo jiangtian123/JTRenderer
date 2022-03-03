@@ -1,15 +1,18 @@
 #include "rasterizer.h"
 #include <vector>
 #include <array>
+#include "camera.h"
 Rasterizer::Rasterizer(unsigned int w = 800, unsigned int h = 600) :width(w), height(h)
 {
-
+	
 };
 void Rasterizer::InIt()
 {
-	defult_frame_buffer = FrameBuffer(width, height);
+	defult_frame_buffer = FrameBuffer(width, height,backColor);
 	vertex_buffer = NULL;
 	index_buffer = NULL;
+	BindViewMat(m_camera->GetLookAt());
+	BindProMat(m_camera->GetProjection());
 }
 void Rasterizer::Draw(const unsigned int vertex_size, const unsigned int index_size, const Primitive drawType, const unsigned int pri_size)
 {
@@ -67,6 +70,10 @@ void Rasterizer::Draw(const unsigned int vertex_size, const unsigned int index_s
 			{
 				(mvp*tri.a()),(mvp * tri.b()),(mvp * tri.c())
 			};
+			std::array<MathLib::Vec4, 3> word_pos
+			{
+				(Model * tri.a()),(Model * tri.b()),(Model * tri.c())
+			};
 			
 			//世界坐标下的法线
 			std::array<MathLib::Vec3, 3> w_normal
@@ -79,7 +86,7 @@ void Rasterizer::Draw(const unsigned int vertex_size, const unsigned int index_s
 			{
 				i.x /= i.w;
 				i.y /= i.w;
-				i.z /= i.w;
+				i.z =  i.w;
 			}
 			for (auto& i : ndc_pos)
 			{
@@ -93,7 +100,7 @@ void Rasterizer::Draw(const unsigned int vertex_size, const unsigned int index_s
 			Vertex C1(ndc_pos[2], tri.GetUv(2), w_normal[2]);
 			C1.SetRwh(1.0f / ndc_pos[2].w);
 			tri = Triangle(A1,B1,C1);
-
+			RasterizeTriangle(tri,word_pos);
 		}
 	}
 }
@@ -113,15 +120,15 @@ bool Rasterizer::IsInsideTriangle(float xn, float yn,const MathLib::Vec2 a0,cons
 		(CA.x * CP.y - CA.y * CP.x) >= 0;
 }
 ///光栅化用包围盒计算三角形，回头改成扫描线
-void Rasterizer::RasterizeTriangle(Triangle& tri)
+void Rasterizer::RasterizeTriangle(Triangle& tri, std::array<MathLib::Vec4, 3> wordPos)
 {
-	MathLib::Vec2 a = tri.a();
-	MathLib::Vec2 b = tri.b();
-	MathLib::Vec2 c = tri.c();
+	MathLib::Vec3 a = tri.a();
+	MathLib::Vec3 b = tri.b();
+	MathLib::Vec3 c = tri.c();
 	float minX = std::min(a.x, std::min(b.x, c.x));
 	float minY = std::min(a.y, std::min(b.y, c.y));
 	float maxX = std::max(a.x, std::max(b.x, c.x));
-	float maxY = std::min(a.y, std::max(b.y, c.y));
+	float maxY = std::max(a.y, std::max(b.y, c.y));
 	int MinX = (int)std::floor(minX);
 	int MinY = (int)std::ceil(minY);
 	int MaxX = (int)std::floor(maxX);
@@ -132,7 +139,24 @@ void Rasterizer::RasterizeTriangle(Triangle& tri)
 		{
 			if (IsInsideTriangle((float)(i + 0.5f), (float)(j + 0.5), a, b, c))
 			{
-
+				auto [alpha, beta, gamma] = MathLib::ComputeBarycentric2D(MathLib::Vec2((float)(i + 0.5f), (float)(j + 0.5)), a, b, c);
+				float Zn = 1.00f / (alpha / a.z + beta / b.z + gamma / c.z);
+				float z = alpha * a.z + beta * b.z + gamma * c.z;
+				if (z>BufferManage::GetManage()->ReadDepthBuffer(defult_frame_buffer.GetFirstColorDepth(),i,j))
+				{
+					MathLib::Vec3 normal = tri.GetNormal(0) * alpha + tri.GetNormal(1) * beta + tri.GetNormal(2) * gamma;
+					MathLib::UV uv = tri.GetUv(0) * alpha + tri.GetUv(0) * beta + tri.GetUv(0) * gamma;
+					MathLib::Vec3 worldP = wordPos[0] * alpha + wordPos[1] * beta + wordPos[2] * gamma;
+					MathLib::Color color_(100,10,13);
+					fragment_shader inP;
+					inP.wordPos = worldP;
+					inP.cameraPos = m_camera->GetCameraPos();
+					Vertex vex(MathLib::Vec4(i+0.5,j+0.5,0.0f,1.0f), uv, normal, color_);
+					inP.vertex = vex;
+					MathLib::Color res_color = fra_shader(inP);
+					BufferManage::GetManage()->WriteColorBuffer(defult_frame_buffer.GetFirstColorBuffer(),i,j, res_color);
+					BufferManage::GetManage()->WriteDepthBuffer(defult_frame_buffer.GetFirstColorDepth(),i,j,z);
+				}
 			}
 		}
 	}
