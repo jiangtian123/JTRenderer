@@ -109,7 +109,13 @@ void Rasterizer::Draw(const unsigned int vertex_size, const unsigned int index_s
 			Vertex C1(ndc_pos[2], tri.GetUv(2), w_normal[2]);
 			C1.SetRwh(1.0f / ndc_pos[2].w);
 			tri = Triangle(A1,B1,C1);
-			RasterizeTriangle(tri,word_pos);
+			MathLib::Vec2 BA = B1.vex - A1.vex;
+			MathLib::Vec2 CA = C1.vex - A1.vex;
+			///判断是顺时针还是逆时针
+			if (MathLib::CrossProduct(BA,CA)>0)
+			{
+				RasterizeTriangle(tri, word_pos);
+			}		
 		}
 	}
 }

@@ -283,6 +283,7 @@ namespace MathLib {
 	bool operator!=(const Vec4 a, const float b);
 	std::ostream& operator<<(std::ostream& os, const Vec4& a);
 	float DotProduct(const Vec3 a, const Vec3 b);
+	float CrossProduct(const Vec2 a, const Vec2 b);
 	Vec3 CrossProduct(const Vec3 a, const Vec3 b);
 	float Length(const Vec3 a);
 	void Normalize(Vec3& a);

@@ -126,6 +126,10 @@ namespace MathLib
 		res.z = a.x * b.y - a.y * b.x;
 		return res;
 	}
+	float CrossProduct(const Vec2 a, const Vec2 b)
+	{
+		return a.x*b.y-a.y*b.x;
+	}
 	float Length(const Vec3 a)
 	{
 		float sq = a.x * a.x + a.y * a.y + a.z * a.z;
