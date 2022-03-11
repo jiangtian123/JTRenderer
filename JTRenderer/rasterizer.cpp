@@ -53,12 +53,21 @@ void Rasterizer::Draw(const unsigned int vertex_size, const unsigned int index_s
 	if (drawType == Primitive::Triangle)
 	{
 		Triangle tri;
-		for (size_t pri = 0; pri < pri_size;)
+		for (size_t pri = 0; pri < pri_size; pri++)
 		{
 			///取一个三角形
-			unsigned int current_index1 = BufferManage::GetManage()->ReadIndexBuffer(*index_buffer, pri++);
-			unsigned int current_index2 = BufferManage::GetManage()->ReadIndexBuffer(*index_buffer, pri++);
-			unsigned int current_index3 = BufferManage::GetManage()->ReadIndexBuffer(*index_buffer, pri++);
+			int index_ = pri*3;
+			if (index_> index_size)
+			{
+				return;
+			}
+			unsigned int current_index1 = BufferManage::GetManage()->ReadIndexBuffer(*index_buffer, index_++);
+			unsigned int current_index2 = BufferManage::GetManage()->ReadIndexBuffer(*index_buffer, index_++);
+			unsigned int current_index3 = BufferManage::GetManage()->ReadIndexBuffer(*index_buffer, index_++);
+			if (current_index1> vertex_size|| current_index2 > vertex_size|| current_index3 > vertex_size)
+			{
+				return;
+			}
 			Vertex a = BufferManage::GetManage()->ReadVertexBuffer(*vertex_buffer, current_index1);
 			Vertex b = BufferManage::GetManage()->ReadVertexBuffer(*vertex_buffer, current_index2);
 			Vertex c = BufferManage::GetManage()->ReadVertexBuffer(*vertex_buffer, current_index3);

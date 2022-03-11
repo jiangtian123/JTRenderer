@@ -82,10 +82,13 @@ void BufferManage::WriteColorBuffer(const unsigned int id, const unsigned int x,
 		return;
 	}
 	static int count;
-	unsigned int* colorbuffer = (unsigned int*)res->second.buffer;
-	unsigned int index = x * res->second.width + y;
+	if (count++==40800)
+	{
+		int a = 11;
+	}
+	unsigned int* const colorbuffer = (unsigned int*)((char*)res->second.buffer+ (x * res->second.width + y)*4);
 	unsigned int tem_color = (co.r<<24)|(co.g<<16)|(co.b<<8)|co.a;
-	colorbuffer[index] = tem_color;
+	*colorbuffer = tem_color;
 }
 MathLib::Color BufferManage::ReadColorBuffer(const unsigned int id, const unsigned int x, const unsigned int y)
 {
@@ -103,7 +106,7 @@ MathLib::Color BufferManage::ReadColorBuffer(const unsigned int id, const unsign
 		std::cout << "OVER W OR H" << std::endl;
 		assert(0);
 	}
-	int* colorbuffer = (int*)res->second.buffer;
+	int* const colorbuffer = (int*)res->second.buffer;
 	unsigned int index = x * res->second.width + y;
 	int tem_co = colorbuffer[index];
 	MathLib::Color co;
@@ -129,9 +132,8 @@ void BufferManage::WriteDepthBuffer(const unsigned int id, const unsigned int x,
 		std::cout << "OVER W OR H" << std::endl;
 		return;
 	}
-	float* depthbuffer = (float*)res->second.buffer;
-	unsigned int index = x * res->second.width + y;
-	depthbuffer[index] = de;
+	float* const depthbuffer = (float*)((char*)res->second.buffer+ (x * res->second.width + y) * 4);
+	*depthbuffer = de;
 }
 float BufferManage::ReadDepthBuffer(const unsigned int id, const unsigned int x, const unsigned int y)
 {
@@ -171,7 +173,7 @@ void BufferManage::WriteVertexBuffer(const unsigned int id, const Vertex*  ver, 
 		std::cout << "POINT IS NULL" << std::endl;
 		return;
 	}
-	Vertex* buffer = (Vertex*)res->second.buffer;
+	Vertex* buffer = (Vertex*)(res->second.buffer);
 	for (unsigned int i = 0; i < count; i++)
 	{
 		buffer[i] = ver[i];
@@ -195,10 +197,11 @@ void BufferManage::WriteIndexBuffer(const unsigned int id, const int*  index, co
 		std::cout << "POINT IS NULL" << std::endl;
 		return;
 	}
-	int* buffer = (int*)res->second.buffer;
+	
 	for (unsigned int i = 0; i < count; i++)
 	{
-		buffer[i] = index[i];
+		int* const buffer = (int*)((char*)res->second.buffer+i*4);
+		*buffer = index[i];
 	}
 }
 const Vertex BufferManage::ReadVertexBuffer(const unsigned int id, const unsigned int index)
@@ -266,18 +269,18 @@ FrameBuffer::FrameBuffer(unsigned int w, unsigned int h ,MathLib::Color backCo)
 	unsigned int colorbuffer;
 	BufferManage::GetManage()->RegisterBuffer(colorbuffer, BufferType::COLOR, w, h);
 	ColorBuffer.insert(colorbuffer);
-	for (size_t i = 0; i < w; i++)
+	for (size_t i = 0; i < h; i++)
 	{
-		for (size_t j = 0; j < h; j++)
+		for (size_t j = 0; j < w; j++)
 		{
 			BufferManage::GetManage()->WriteColorBuffer(colorbuffer,i,j, backCo);
 		}
 	}
 	unsigned int depthbuffer;
 	BufferManage::GetManage()->RegisterBuffer(depthbuffer, BufferType::DEPTH, w, h);
-	for (size_t i = 0; i < w; i++)
+	for (size_t i = 0; i < h; i++)
 	{
-		for (size_t j = 0; j < h; j++)
+		for (size_t j = 0; j < w; j++)
 		{
 			BufferManage::GetManage()->WriteDepthBuffer(depthbuffer, i, j, FLT_MIN);
 		}

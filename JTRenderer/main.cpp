@@ -9,24 +9,24 @@ MathLib::Color fra_shader(fragment_shader inf)
 {
 	return MathLib::Color(255,0,0);
 }
-Camera minCam(Vec3(0), Vec3(0, 1, 0), Vec3(0, 0, 2));
+Camera minCam(Vec3(0), Vec3(0, 1, 0), Vec3(0, 0, 3));
 int main(void)
 {
 	float color_ziae = sizeof(Color);
-	Rasterizer ras(10, 10);
+	Rasterizer ras(800, 600);
 	ras.BindCamera(&minCam);
-	ras.SetBackGroundColor(MathLib::Color(50,50,50));
+	ras.SetBackGroundColor(MathLib::Color(20,100,50));
 	ras.BindModelMat(MathLib::Mat4x4());
 	ras.InIt();
 	ras.BindFragmentShader(fra_shader);
 	std::vector<Vertex> vertexarray = {
-		Vertex(Vec4(-0.5,0.5,0,1),Vec2(0,0)),
-		Vertex(Vec4(0.5,0.5,0,1),Vec2(1,0)),
-		Vertex(Vec4(-0.5,-0.5,0,1),Vec2(0,1)),
-		Vertex(Vec4(0.5,-0.5,0,1),Vec2(1,1))
+		Vertex(Vec4(-0.6,0.6,0,1),Vec2(0,0)),
+		Vertex(Vec4(0.6,0.6,0,1),Vec2(1,0)),
+		Vertex(Vec4(-0.6,-0.6,0,1),Vec2(0,1)),
+		Vertex(Vec4(0.6,-0.6,0,1),Vec2(1,1))
 	};
 	std::vector<int> indexarray{
-		0,1,3,0,2,3
+		0,1,3,0,3,2
 	};
 	unsigned int VerBuffer;
 	BufferManage::GetManage()->RegisterBuffer(VerBuffer, BufferType::VERTEX, vertexarray.size(),1);
@@ -39,8 +39,8 @@ int main(void)
 	ras.Draw(vertexarray.size(), indexarray.size(),Primitive::Triangle, indexarray.size()/3);
 	FILE* fp = fopen("binary3.ppm", "wb");
 	(void)fprintf(fp, "P6\n%d %d\n255\n",ras.GetWidth(),ras.GetHeight() );
-	for (auto i = 0; i < ras.GetWidth() ; ++i) {
-		for (size_t j = 0; j < ras.GetHeight(); j++)
+	for (auto i = 0; i < ras.GetHeight(); ++i) {
+		for (size_t j = 0; j < ras.GetWidth(); j++)
 		{
 			MathLib::Color tem_color = BufferManage::GetManage()->ReadColorBuffer(ras.GetDefultColorBuffer(),i,j);
 			static unsigned char color[3];

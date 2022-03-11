@@ -47,7 +47,7 @@ public:
 			break;
 		}
 		size = width * height * offest;
-		buffer = malloc(size);
+		buffer = (char*)malloc(size);
 		if (buffer==NULL)
 		{
 			LOG("error");
@@ -82,7 +82,7 @@ public:
 			break;
 		}
 		size = width * height * offest;
-		buffer = malloc(size);
+		buffer = (char*)malloc(size);
 		if (buffer == NULL)
 		{
 			LOG("error");
@@ -114,7 +114,7 @@ private:
 	unsigned int max_h;
 	unsigned int size;
 	unsigned int count;
-	void* buffer;
+	char* buffer;
 };
 class BufferManage
 {
