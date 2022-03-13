@@ -33,7 +33,7 @@ BufferManage::~BufferManage()
 	{
 		stbi_image_free(texture_begin->second.pi);
 		texture_begin->second.pi = NULL;
-		buffer_begin++;
+		texture_begin++;
 	}
 	TextureBufferlist.clear();
 	Bufferlist.clear();

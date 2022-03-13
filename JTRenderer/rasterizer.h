@@ -56,6 +56,10 @@ public:
 	{
 		m_camera = ca;
 	}
+	inline void BindTex(std::string name,  unsigned int* tex)
+	{
+		texMap.insert(std::pair<std::string,unsigned int*>{name, tex});
+	}
 	inline void SetBackGroundColor(const MathLib::Color bc)
 	{
 		backColor = bc;
@@ -97,4 +101,5 @@ private:
 	unsigned int* index_buffer;
 	MathLib::Color backColor = MathLib::Color(0);
 	FrameBuffer defult_frame_buffer;
+	std::unordered_map<std::string, unsigned int*> texMap;
 };

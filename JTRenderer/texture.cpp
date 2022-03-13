@@ -53,12 +53,15 @@ Color Texture::GetColor(float u, float v, Srruound sr)
 	default:
 		break;
 	}
-	int x = (int)tem_u * height - 1;
-	int y = (int)tem_v * width - 1;
+	int x = (int)(tem_v * (height - 1));
+	int y = (int)(tem_u * (width - 1));
+	static int a = 0;
+
 	Color res;
-	res.r = pi[(x * width + y) * nrChannels];
-	res.g = (short)pi[(x * width + y) * nrChannels + 1];
-	res.b = (short)pi[(x * width + y) * nrChannels + 2];
-	res.a = (short)(pi[(x * width + y) * nrChannels + 3] / 255.0f);
+	int idex = (x * width + y) * 4;
+	res.r = pi[idex];
+	res.g = (short)pi[idex + 1];
+	res.b = (short)pi[idex + 2];
+	res.a = (short)(pi[idex + 3] / 255.0f);
 	return res;
 }

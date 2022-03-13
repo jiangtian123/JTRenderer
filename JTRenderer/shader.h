@@ -17,6 +17,7 @@ struct fragment_shader
 	MathLib::Vec3 cameraPos;
 	MathLib::Vec3 wordPos;
 	MathLib::Vec3 lightPos;
+	std::vector<unsigned int*> tex;
 	Vertex vertex;
 };
 struct vertex_shader

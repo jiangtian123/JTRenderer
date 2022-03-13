@@ -7,7 +7,14 @@
 using namespace MathLib;
 MathLib::Color fra_shader(fragment_shader inf)
 {
-	return MathLib::Color(255,0,0);
+	unsigned int tex;
+	if (!inf.tex.empty())
+	{
+		tex = *inf.tex[0];
+	}
+	
+	MathLib::Color tem_co = BufferManage::GetManage()->Tex(tex, inf.vertex.uv.x, inf.vertex.uv.y);
+	return tem_co;
 }
 Camera minCam(Vec3(0), Vec3(0, 1, 0), Vec3(0, 0, 3));
 int main(void)
@@ -18,6 +25,7 @@ int main(void)
 	ras.SetBackGroundColor(MathLib::Color(20,100,50));
 	ras.BindModelMat(MathLib::Mat4x4());
 	ras.InIt();
+	
 	ras.BindFragmentShader(fra_shader);
 	std::vector<Vertex> vertexarray = {
 		Vertex(Vec4(-0.6,0.6,0,1),Vec2(0,0)),
@@ -34,8 +42,11 @@ int main(void)
 	unsigned int indexBuffer;
 	BufferManage::GetManage()->RegisterBuffer(indexBuffer, BufferType::INDEX, indexarray.size(),1);
 	BufferManage::GetManage()->WriteIndexBuffer(indexBuffer,indexarray.data(), indexarray.size() * sizeof(int), indexarray.size());
+	unsigned int texBuffer;
+	BufferManage::GetManage()->RegisterTextureBuffer(texBuffer,"D:\\DRenderer\\JTRenderer\\Image\\test1.jpg");
 	ras.BindVertex(&VerBuffer);
 	ras.BindIndex(&indexBuffer);
+	ras.BindTex("Default", &texBuffer);
 	ras.Draw(vertexarray.size(), indexarray.size(),Primitive::Triangle, indexarray.size()/3);
 	FILE* fp = fopen("binary3.ppm", "wb");
 	(void)fprintf(fp, "P6\n%d %d\n255\n",ras.GetWidth(),ras.GetHeight() );

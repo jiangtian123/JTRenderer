@@ -145,8 +145,8 @@ void Rasterizer::RasterizeTriangle(Triangle& tri, std::array<MathLib::Vec4, 3> w
 	float maxX = std::max(a.x, std::max(b.x, c.x));
 	float maxY = std::max(a.y, std::max(b.y, c.y));
 	int MinX = (int)std::floor(minX);
-	int MinY = (int)std::ceil(minY);
-	int MaxX = (int)std::floor(maxX);
+	int MinY = (int)std::floor(minY);
+	int MaxX = (int)std::ceil(maxX);
 	int MaxY = (int)std::ceil(maxY);
 	for (size_t i = MinX; i < MaxX; i++)
 	{
@@ -160,7 +160,7 @@ void Rasterizer::RasterizeTriangle(Triangle& tri, std::array<MathLib::Vec4, 3> w
 				if (z>BufferManage::GetManage()->ReadDepthBuffer(defult_frame_buffer.GetFirstColorDepth(),i,j))
 				{
 					MathLib::Vec3 normal = tri.GetNormal(0) * alpha + tri.GetNormal(1) * beta + tri.GetNormal(2) * gamma;
-					MathLib::UV uv = tri.GetUv(0) * alpha + tri.GetUv(0) * beta + tri.GetUv(0) * gamma;
+					MathLib::UV uv = tri.GetUv(0) * alpha + tri.GetUv(1) * beta + tri.GetUv(2) * gamma;
 					MathLib::Vec3 worldP = wordPos[0] * alpha + wordPos[1] * beta + wordPos[2] * gamma;
 					MathLib::Color color_(100,10,13);
 					fragment_shader inP;
@@ -168,6 +168,11 @@ void Rasterizer::RasterizeTriangle(Triangle& tri, std::array<MathLib::Vec4, 3> w
 					inP.cameraPos = m_camera->GetCameraPos();
 					Vertex vex(MathLib::Vec4(i+0.5,j+0.5,0.0f,1.0f), uv, normal, color_);
 					inP.vertex = vex;
+					for (auto tem_tex_map:texMap)
+					{
+						unsigned int* t = tem_tex_map.second;
+						inP.tex.push_back(t);
+					}
 					MathLib::Color res_color = fra_shader(inP);
 					BufferManage::GetManage()->WriteColorBuffer(defult_frame_buffer.GetFirstColorBuffer(),i,j, res_color);
 					BufferManage::GetManage()->WriteDepthBuffer(defult_frame_buffer.GetFirstColorDepth(),i,j,z);
